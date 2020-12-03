@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dbiconf</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -94,14 +94,26 @@
     
     
 <p>Database parameters can be configured to dynamically obtain its value at connection-time using “loaders”. For example, a database might look like:</p>
-<pre class="toml"><code>[database.EXAMPLE]
+<pre class="toml"><code>[database.loader_example]
 _driver = "RSQLite::SQLite"
 dbname = { interactive = true }</code></pre>
-<p>In this case, the <code>dbname</code> parameter is a loader, and the value will be obtained from the user interactively when creating a connection using <code>dbConnect()</code>. Loaders are usually specified using <a href="https://toml.io/en/v1.0.0-rc.3#inline-table">inline tables</a>, but standard <a href="https://toml.io/en/v1.0.0-rc.3#table">tables</a> are also fine.</p>
-<p>There are a few different type of loaders, which are explained below.</p>
-<div id="interactive-loader" class="section level2">
+<p>In this case, the <code>dbname</code> parameter is a loader, and the value will be obtained from the user interactively when creating a connection using <code>dbConnect()</code>. Loaders are usually specified using <a href="https://toml.io/en/v1.0.0-rc.3#inline-table">inline tables</a>:</p>
+<pre class="toml"><code>[database.database_name]
+_driver = "RSQLite::SQLite"
+param = { loader_name = "loader_value" }</code></pre>
+<p>but standard <a href="https://toml.io/en/v1.0.0-rc.3#table">tables</a> are also fine.:</p>
+<pre class="toml"><code>[database.database_name]
+_driver = "RSQLite::SQLite"
+
+   [database.database_name.param]
+   loader_name = "loader_value"</code></pre>
+<div id="included-loaders" class="section level2">
 <h2 class="hasAnchor">
-<a href="#interactive-loader" class="anchor"></a>Interactive loader</h2>
+<a href="#included-loaders" class="anchor"></a>Included loaders</h2>
+<p>There are a few types of loaders which are included with dbiconf. See below for their arguments.</p>
+<div id="interactive-loader" class="section level3">
+<h3 class="hasAnchor">
+<a href="#interactive-loader" class="anchor"></a>Interactive loader</h3>
 <p>The interactive loader will show an interactive prompt at connection-time for the user to type the parameter value. The value obtained from the prompt can be specified as being a secret or not. If the value is secret, the prompt will mask the value as it is being typed, otherwise the value will be plainly visible. By default the prompt will be secret.</p>
 <p>When specifying an interactive loader, it should have a single key <code>interactive</code>. The value of <code>interactive</code> should be one of the following:</p>
 <ol style="list-style-type: decimal">
@@ -121,9 +133,9 @@ dbname = { interactive = true }</code></pre>
 </li>
 </ol>
 </div>
-<div id="environment-variable-loader" class="section level2">
-<h2 class="hasAnchor">
-<a href="#environment-variable-loader" class="anchor"></a>Environment variable loader</h2>
+<div id="environment-variable-loader" class="section level3">
+<h3 class="hasAnchor">
+<a href="#environment-variable-loader" class="anchor"></a>Environment variable loader</h3>
 <p>The environment variable loader can dynamically obtain parameter values from an environment variable.</p>
 <p>An environment variable loader should have a single key <code>envvar</code>. The value of <code>envvar</code> should be one of the following:</p>
 <ol style="list-style-type: decimal">
@@ -143,9 +155,9 @@ dbname = { interactive = true }</code></pre>
 </li>
 </ol>
 </div>
-<div id="file-loader" class="section level2">
-<h2 class="hasAnchor">
-<a href="#file-loader" class="anchor"></a>File loader</h2>
+<div id="file-loader" class="section level3">
+<h3 class="hasAnchor">
+<a href="#file-loader" class="anchor"></a>File loader</h3>
 <p>A file loader will read a file, and use the content as the parameter value. You can also specify whether any whitespace surrounding the content should be trimmed or not, e.g. a trailing newline.</p>
 <p>A file loader should have a single key <code>file</code>. The value of <code>file</code> should be one of the following:</p>
 <ol style="list-style-type: decimal">
@@ -165,9 +177,9 @@ dbname = { interactive = true }</code></pre>
 </li>
 </ol>
 </div>
-<div id="keyring-loader" class="section level2">
-<h2 class="hasAnchor">
-<a href="#keyring-loader" class="anchor"></a>Keyring loader</h2>
+<div id="keyring-loader" class="section level3">
+<h3 class="hasAnchor">
+<a href="#keyring-loader" class="anchor"></a>Keyring loader</h3>
 <p>A keyring loader uses the <a href="https://github.com/r-lib/keyring">keyring</a> package to read values from the OS system credential store.</p>
 <p>A keyring loader should have a single key <code>keyring</code>. The value of <code>keyring</code> should be one of the following:</p>
 <ol style="list-style-type: decimal">
@@ -191,6 +203,29 @@ dbname = { interactive = true }</code></pre>
 <pre class="toml"><code>param = { keyring = { service = "my-password", username = "my-username", keyring = "my-keyring" } } </code></pre>
 </li>
 </ol>
+</div>
+<div id="zap-loader" class="section level3">
+<h3 class="hasAnchor">
+<a href="#zap-loader" class="anchor"></a>Zap loader(?)</h3>
+<p>A zap loader removes the specified parameter when the configuration file is parsed. It has no effect at connection-time. So in that sense, it is not really a loader… This can be used when merging multiple configuration files, and you would like to override a database by removing a parameter.</p>
+<p>A zap loader should have a single key <code>zap</code>. The value of <code>zap</code> must be the constant <code>true</code>.</p>
+<pre class="toml"><code>param = { zap = true }</code></pre>
+</div>
+</div>
+<div id="custom-loaders" class="section level2">
+<h2 class="hasAnchor">
+<a href="#custom-loaders" class="anchor"></a>Custom loaders</h2>
+<p>Custom loaders can be defined by adding a method for the <code><a href="../reference/loader_resolve.html">loader_resolve()</a></code> generic.</p>
+<p>For example, if I wanted to add a <code>hello</code> loader:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">loader_resolve.dbiconf_loader_hello</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
+   <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"hello"</span>, <span class="va">x</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
+<p>Then I could write in my configuration file:</p>
+<pre class="toml"><code>[database.custom_hello_db]
+_driver = "RSQLite::SQLite"
+dbname = { hello = "world" }</code></pre>
+<p>When I try to connect to the database <code>custom_hello_db</code> using <code>dbConnect()</code>, the value of <code>dbname</code> will be equal to <code>"hello world"</code></p>
 </div>
   </div>
 

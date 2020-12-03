@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">dbiconf</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -89,6 +89,23 @@
 <!-- badges: start -->
 
 <p>This package allows you to save DBI database parameters in a configuration file.</p>
+<div id="example-configuration-file" class="section level2">
+<h2 class="hasAnchor">
+<a href="#example-configuration-file" class="anchor"></a>Example configuration file</h2>
+<p>Configuration is written in TOML:</p>
+<pre class="toml"><code># example.toml
+
+[database.my_database]
+_driver = "odbc::odbc"
+server = "my.database.com"
+database = "MyDatabase"
+uid = "bob_loblaw"
+pwd = "password123"</code></pre>
+<p>How to use it:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_databases.html">read_databases</a></span><span class="op">(</span><span class="st">"example.toml"</span><span class="op">)</span>
+<span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu">dbConnect</span><span class="op">(</span><span class="va">db</span><span class="op">$</span><span class="va">my_database</span><span class="op">)</span></code></pre></div>
+</div>
 </div>
   </div>
 
